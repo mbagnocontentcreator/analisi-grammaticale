@@ -433,7 +433,7 @@
             // API key integrata per uso educativo (offuscata per sicurezza)
             // Per ottenere una API key: https://console.anthropic.com/
             apiKey: atob('c2stYW50LWFwaTAzLTBHUm9meVd6dV8xTkhEb0ZFOFhRLVl0em12WXpwWUFTMFNtazlCR3lBYlVDenUtZTNSQmFDWkp5ZV9veU4yVGJwREtCWGJ3d2xiT1B1SFpHQkh5VjJBLXFCSnlSd0FB'),
-            model: 'claude-3-5-sonnet-20241022',  // Modello Sonnet stabile e affidabile
+            model: 'claude-3-sonnet-20240229',  // Modello testato e funzionante
             maxTokens: 1500
         };
         
@@ -566,7 +566,8 @@
                     headers: {
                         "Content-Type": "application/json",
                         "x-api-key": API_CONFIG.apiKey,
-                        "anthropic-version": "2023-06-01"
+                        "anthropic-version": "2023-06-01",
+                        "anthropic-beta": "messages-2023-12-15"
                     },
                     body: JSON.stringify({
                         model: API_CONFIG.model,
