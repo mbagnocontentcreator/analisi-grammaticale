@@ -1,0 +1,1274 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="theme-color" content="#667eea">
+    <!-- Manifest abilitato solo se servito via HTTP -->
+    <script>
+        if (window.location.protocol !== 'file:') {
+            const link = document.createElement('link');
+            link.rel = 'manifest';
+            link.href = 'manifest.json';
+            document.head.appendChild(link);
+        }
+    </script>
+    <title>Analisi Grammaticale - Impara Divertendoti!</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+
+        .input-section {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: #333;
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 3px solid #667eea;
+            border-radius: 12px;
+            font-size: 16px;
+            font-family: Arial, sans-serif;
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #764ba2;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-analyze {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-bottom: 20px;
+        }
+
+        .btn-analyze:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-analyze:active {
+            transform: translateY(0);
+        }
+
+        .results {
+            display: none;
+        }
+
+        .results.show {
+            display: block;
+        }
+
+        .word-card {
+            background: #f8f9fa;
+            border-left: 5px solid #667eea;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .word-text {
+            font-size: 22px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .word-type {
+            display: inline-block;
+            padding: 6px 12px;
+            background: #667eea;
+            color: white;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .word-explanation {
+            color: #555;
+            line-height: 1.6;
+            font-size: 15px;
+            margin-top: 10px;
+            padding: 10px;
+            background: white;
+            border-radius: 6px;
+        }
+
+        .emoji {
+            font-size: 24px;
+            margin-right: 8px;
+        }
+
+        .example-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .example-btn:hover {
+            background: #218838;
+        }
+
+        /* Effetto hover per bottone AI */
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        /* Colori diversi per ogni tipo di parola */
+        .word-card.nome { border-left-color: #e74c3c; }
+        .word-card.nome .word-type { background: #e74c3c; }
+        
+        .word-card.verbo { border-left-color: #3498db; }
+        .word-card.verbo .word-type { background: #3498db; }
+        
+        .word-card.articolo { border-left-color: #f39c12; }
+        .word-card.articolo .word-type { background: #f39c12; }
+        
+        .word-card.aggettivo { border-left-color: #9b59b6; }
+        .word-card.aggettivo .word-type { background: #9b59b6; }
+        
+        .word-card.preposizione { border-left-color: #1abc9c; }
+        .word-card.preposizione .word-type { background: #1abc9c; }
+        
+        .word-card.avverbio { border-left-color: #e67e22; }
+        .word-card.avverbio .word-type { background: #e67e22; }
+
+        .word-card.pronome { border-left-color: #34495e; }
+        .word-card.pronome .word-type { background: #34495e; }
+
+        .word-card.congiunzione { border-left-color: #16a085; }
+        .word-card.congiunzione .word-type { background: #16a085; }
+
+        .word-card.interiezione { border-left-color: #e91e63; }
+        .word-card.interiezione .word-type { background: #e91e63; }
+
+        .word-card.numerale { border-left-color: #00bcd4; }
+        .word-card.numerale .word-type { background: #00bcd4; }
+
+        /* Responsive design migliorato per tutti i dispositivi */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                max-width: 100%;
+                padding: 15px;
+                border-radius: 15px;
+            }
+            
+            h1 {
+                font-size: 26px;
+            }
+            
+            .btn-analyze {
+                padding: 20px;
+                font-size: 18px;
+            }
+            
+            .word-card {
+                padding: 12px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 12px;
+            }
+            
+            h1 {
+                font-size: 22px;
+            }
+            
+            .subtitle {
+                font-size: 12px;
+            }
+            
+            textarea {
+                padding: 12px;
+                font-size: 15px;
+                min-height: 70px;
+            }
+            
+            .btn-analyze {
+                padding: 16px;
+                font-size: 17px;
+            }
+            
+            .word-text {
+                font-size: 18px;
+            }
+            
+            .word-explanation {
+                font-size: 13px;
+            }
+        }
+        
+        /* Ottimizzazioni per tablet */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .container {
+                max-width: 700px;
+            }
+        }
+        
+        /* Miglioramenti per touch devices */
+        @media (pointer: coarse) {
+            button {
+                min-height: 44px;
+                min-width: 44px;
+            }
+            
+            .btn-analyze {
+                padding: 20px;
+            }
+            
+            .example-btn {
+                padding: 12px 18px;
+            }
+            
+            textarea {
+                -webkit-appearance: none;
+                appearance: none;
+            }
+        }
+        
+        /* Supporto per landscape mode su mobile */
+        @media (max-height: 500px) and (orientation: landscape) {
+            body {
+                padding: 5px;
+            }
+            
+            .container {
+                padding: 10px;
+            }
+            
+            h1 {
+                font-size: 20px;
+                margin-bottom: 5px;
+            }
+            
+            .subtitle {
+                display: none;
+            }
+            
+            textarea {
+                min-height: 50px;
+            }
+        }
+        
+        /* Animazioni e transizioni smooth */
+        * {
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        button {
+            -webkit-user-select: none;
+            user-select: none;
+            touch-action: manipulation;
+        }
+        
+        /* Scroll behavior migliorato */
+        html {
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎓 Analisi Grammaticale</h1>
+        <p class="subtitle">Impara divertendoti!</p>
+
+        <div class="input-section">
+            <label for="frase">📝 Scrivi una frase:</label>
+            <textarea 
+                id="frase" 
+                placeholder="Es: Simone mangia un piatto di pasta velocemente"
+            ></textarea>
+        </div>
+
+        <button class="btn-analyze" onclick="analizzaFrase()">
+            🔍 Analizza la Frase
+        </button>
+
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <button class="example-btn" onclick="usaEsempio()" style="flex: 1;">
+                💡 Usa frase di esempio
+            </button>
+            <button class="example-btn" onclick="configuraAPIKey()" style="flex: 1; background: #764ba2;">
+                🔑 Configura API
+            </button>
+        </div>
+
+        <div id="results" class="results"></div>
+    </div>
+
+    <!-- Include i file JavaScript esterni -->
+    <script src="dizionario-verbi.js"></script>
+    <script src="analizzatore-avanzato.js"></script>
+    
+    <script>
+        // Database delle regole grammaticali
+        const regoleGrammaticali = {
+            nome: {
+                emoji: '🏷️',
+                definizione: 'Il NOME è una parola che indica persone, animali, cose, luoghi o idee.',
+                esempi: 'Esempi: bambino, gatto, libro, scuola, felicità'
+            },
+            verbo: {
+                emoji: '⚡',
+                definizione: 'Il VERBO è la parola che indica un\'azione, uno stato o un modo di essere.',
+                esempi: 'Esempi: correre, mangiare, essere, dormire, studiare'
+            },
+            articolo: {
+                emoji: '📌',
+                definizione: 'L\'ARTICOLO è una parolina che si mette davanti al nome. Può essere determinativo (il, lo, la, i, gli, le) o indeterminativo (un, uno, una).',
+                esempi: 'Esempi: il cane, una mela, gli amici'
+            },
+            aggettivo: {
+                emoji: '🎨',
+                definizione: 'L\'AGGETTIVO è una parola che descrive com\'è il nome, aggiungendo qualità o caratteristiche.',
+                esempi: 'Esempi: bello, grande, veloce, rosso, simpatico, mio, ogni'
+            },
+            preposizione: {
+                emoji: '🔗',
+                definizione: 'La PREPOSIZIONE è una parolina che collega le parole tra loro e indica relazioni (luogo, tempo, modo, ecc.).',
+                esempi: 'Esempi: di, a, da, in, con, su, per, tra, fra, senza'
+            },
+            avverbio: {
+                emoji: '✨',
+                definizione: 'L\'AVVERBIO è una parola che modifica o precisa il significato del verbo, di un aggettivo o di un altro avverbio. Risponde alle domande: come? quando? dove? quanto?',
+                esempi: 'Esempi: velocemente (come?), oggi (quando?), qui (dove?), molto (quanto?)'
+            },
+            pronome: {
+                emoji: '👤',
+                definizione: 'Il PRONOME è una parola che sostituisce il nome per evitare ripetizioni.',
+                esempi: 'Esempi: io, tu, lui, lei, noi, voi, loro, questo, quello, mio, qualcuno'
+            },
+            congiunzione: {
+                emoji: '🤝',
+                definizione: 'La CONGIUNZIONE è una parola che unisce due parole o due frasi.',
+                esempi: 'Esempi: e, ma, o, però, quindi, perché, quando, se'
+            },
+            interiezione: {
+                emoji: '💬',
+                definizione: 'L\'INTERIEZIONE è una parola o espressione che manifesta emozioni, sentimenti o richiami improvvisi.',
+                esempi: 'Esempi: oh!, ah!, evviva!, uffa!, ahimè!, bravo!, ehi!'
+            },
+            numerale: {
+                emoji: '🔢',
+                definizione: 'Il NUMERALE è una parola che indica una quantità precisa (cardinale) o una posizione in una serie (ordinale).',
+                esempi: 'Esempi: uno, due, tre (cardinali), primo, secondo, terzo (ordinali)'
+            }
+        };
+
+        // Configurazione API
+        const API_CONFIG = {
+            // IMPORTANTE: Inserire qui la propria API key di Anthropic
+            // Per ottenere una API key: https://console.anthropic.com/
+            apiKey: localStorage.getItem('anthropic_api_key') || '',
+            model: 'claude-3-sonnet-20241022',  // Modello più recente e stabile
+            maxTokens: 1500
+        };
+        
+        // Funzione per configurare l'API key
+        function configuraAPIKey() {
+            const currentKey = localStorage.getItem('anthropic_api_key') || '';
+            const newKey = prompt('Inserisci la tua API key di Anthropic Claude:\n\n' +
+                                 'Per ottenere una API key gratuita:\n' +
+                                 '1. Vai su https://console.anthropic.com/\n' +
+                                 '2. Registrati o accedi\n' +
+                                 '3. Crea una nuova API key\n\n' +
+                                 'La chiave verrà salvata localmente nel tuo browser.', currentKey);
+            
+            if (newKey && newKey.trim()) {
+                localStorage.setItem('anthropic_api_key', newKey.trim());
+                API_CONFIG.apiKey = newKey.trim();
+                alert('API key salvata con successo!');
+                return true;
+            }
+            return false;
+        }
+        
+        // Funzione per l'analisi AI avanzata
+        async function analisiAI(frase) {
+            // Verifica se stiamo eseguendo da file://
+            if (window.location.protocol === 'file:') {
+                const resultsDiv = document.getElementById('results');
+                resultsDiv.innerHTML = `
+                    <div style="text-align: center; padding: 40px; background: #fff3cd; 
+                                border-radius: 15px; border: 2px solid #ffc107;">
+                        <h3 style="color: #856404; margin-bottom: 15px;">⚠️ Attenzione: Limitazione del browser</h3>
+                        <p style="color: #856404; margin-bottom: 20px;">
+                            <strong>L'analisi AI non funziona aprendo il file direttamente.</strong>
+                            <br><br>
+                            Per motivi di sicurezza, i browser bloccano le chiamate API quando apri file locali.
+                        </p>
+                        <div style="background: white; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                            <h4 style="color: #333; margin-bottom: 15px;">🔧 Soluzioni disponibili:</h4>
+                            
+                            <div style="text-align: left; margin-bottom: 20px;">
+                                <h5 style="color: #667eea; margin-bottom: 10px;">Opzione 1: Usa il server locale (consigliata)</h5>
+                                <ol style="color: #555; line-height: 1.8;">
+                                    <li>Apri il Terminale (Launchpad → Altro → Terminale)</li>
+                                    <li>Naviga alla cartella del progetto:<br>
+                                        <code style="background: #f5f5f5; padding: 5px; border-radius: 3px;">
+                                        cd "/Users/casa/Library/Mobile Documents/com~apple~CloudDocs/ANALISI GRAMMATICALE"
+                                        </code>
+                                    </li>
+                                    <li>Avvia il server:<br>
+                                        <code style="background: #f5f5f5; padding: 5px; border-radius: 3px;">
+                                        python3 -m http.server 8000
+                                        </code>
+                                    </li>
+                                    <li>Apri nel browser: <a href="http://localhost:8000/analisi-grammaticale.html" target="_blank">http://localhost:8000</a></li>
+                                </ol>
+                                
+                                <p style="color: #667eea; margin-top: 10px;">
+                                    <strong>OPPURE</strong> fai doppio click sul file <strong>avvia-server.command</strong> nella cartella del progetto
+                                </p>
+                            </div>
+                            
+                            <div style="text-align: left;">
+                                <h5 style="color: #667eea; margin-bottom: 10px;">Opzione 2: Usa un servizio online</h5>
+                                <p style="color: #555;">
+                                    Carica i file su uno di questi servizi gratuiti:
+                                </p>
+                                <ul style="color: #555; line-height: 1.8;">
+                                    <li><a href="https://netlify.com" target="_blank">Netlify</a> (drag & drop)</li>
+                                    <li><a href="https://surge.sh" target="_blank">Surge.sh</a></li>
+                                    <li><a href="https://github.com" target="_blank">GitHub Pages</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <p style="color: #856404; font-size: 14px; margin-top: 20px;">
+                            <strong>Nota:</strong> L'analisi grammaticale base funziona comunque anche senza server!
+                        </p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Verifica presenza API key
+            if (!API_CONFIG.apiKey) {
+                const configured = configuraAPIKey();
+                if (!configured) {
+                    alert('Per utilizzare l\'analisi AI è necessaria una API key di Anthropic.');
+                    return;
+                }
+            }
+            
+            // Mostra un indicatore di caricamento
+            const resultsDiv = document.getElementById('results');
+            const loadingHTML = `
+                <div style="text-align: center; padding: 40px;">
+                    <div style="display: inline-block; width: 50px; height: 50px; border: 5px solid #f3f3f3; 
+                                border-top: 5px solid #667eea; border-radius: 50%; 
+                                animation: spin 1s linear infinite;"></div>
+                    <p style="margin-top: 20px; color: #667eea; font-size: 18px; font-weight: bold;">
+                        🤖 Analisi AI in corso...
+                    </p>
+                    <p style="color: #666; font-size: 14px;">
+                        Sto analizzando la frase in modo approfondito
+                    </p>
+                </div>
+                <style>
+                    @keyframes spin {
+                        0% { transform: rotate(0deg); }
+                        100% { transform: rotate(360deg); }
+                    }
+                </style>
+            `;
+            
+            resultsDiv.innerHTML = loadingHTML;
+
+            try {
+                console.log('Invio richiesta AI con API key:', API_CONFIG.apiKey ? 'presente' : 'mancante');
+                console.log('Modello utilizzato:', API_CONFIG.model);
+                
+                const response = await fetch("https://api.anthropic.com/v1/messages", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "x-api-key": API_CONFIG.apiKey,
+                        "anthropic-version": "2023-06-01"
+                    },
+                    body: JSON.stringify({
+                        model: API_CONFIG.model,
+                        max_tokens: API_CONFIG.maxTokens,
+                        messages: [
+                            { 
+                                role: "user", 
+                                content: `Sei un insegnante di italiano per bambini di quinta elementare. Analizza questa frase in modo completo e didattico:
+
+"${frase}"
+
+Fornisci:
+1. ANALISI GRAMMATICALE completa di ogni parola (nome, verbo, articolo, ecc.) con spiegazioni semplici
+2. ANALISI LOGICA: identifica soggetto, predicato, complementi principali
+3. TIPO DI FRASE: semplice, complessa, coordinata, subordinata
+4. EVENTUALI ERRORI grammaticali o suggerimenti per migliorare la frase
+5. CURIOSITÀ o NOTE DIDATTICHE per aiutare a ricordare meglio
+
+Usa un linguaggio semplice, chiaro e incoraggiante adatto a un bambino di 10 anni. Usa emoji per rendere la spiegazione più coinvolgente.`
+                            }
+                        ]
+                    })
+                });
+
+                console.log('Risposta HTTP status:', response.status);
+                console.log('Risposta HTTP ok:', response.ok);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Errore risposta API:', errorText);
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+                }
+
+                const data = await response.json();
+                console.log('Dati ricevuti:', data);
+                
+                if (data.content && data.content[0] && data.content[0].text) {
+                    const analisiCompleta = data.content[0].text;
+                    
+                    // Mostra i risultati dell'AI
+                    resultsDiv.innerHTML = `
+                        <div style="background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                            <h2 style="color: #667eea; margin-bottom: 20px; text-align: center;">
+                                🤖 Analisi Avanzata con AI
+                            </h2>
+                            <div style="background: #f8f9fa; padding: 20px; border-radius: 12px; 
+                                        line-height: 1.8; color: #333; font-size: 16px; white-space: pre-wrap;">
+                                ${analisiCompleta}
+                            </div>
+                            <button onclick="location.reload()" 
+                                    style="width: 100%; margin-top: 20px; padding: 15px; 
+                                           background: #667eea; color: white; border: none; 
+                                           border-radius: 12px; font-size: 16px; font-weight: bold; 
+                                           cursor: pointer;">
+                                🔄 Analizza un'altra frase
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    throw new Error('Risposta non valida dall\'AI');
+                }
+
+            } catch (error) {
+                console.error('Errore nell\'analisi AI:', error);
+                console.error('Dettagli errore:', error.message);
+                
+                let errorMessage = 'Errore generico';
+                let dettagliTecnici = '';
+                
+                if (error.message.includes('401')) {
+                    errorMessage = 'API key non valida';
+                    dettagliTecnici = 'La chiave API inserita non è valida o è stata revocata.';
+                } else if (error.message.includes('403')) {
+                    errorMessage = 'Accesso negato';
+                    dettagliTecnici = 'La tua API key non ha i permessi necessari.';
+                } else if (error.message.includes('429')) {
+                    errorMessage = 'Troppe richieste';
+                    dettagliTecnici = 'Hai superato il limite di richieste. Attendi qualche secondo.';
+                } else if (error.message.includes('400')) {
+                    errorMessage = 'Richiesta non valida';
+                    dettagliTecnici = 'Il formato della richiesta non è corretto.';
+                } else if (error.message.includes('404')) {
+                    errorMessage = 'Modello non trovato';
+                    dettagliTecnici = 'Il modello AI specificato non esiste.';
+                } else if (error.message.includes('network') || error.message.includes('Failed to fetch')) {
+                    errorMessage = 'Errore di connessione';
+                    dettagliTecnici = 'Impossibile connettersi al servizio AI. Verifica la connessione internet.';
+                } else if (error.message.includes('CORS')) {
+                    errorMessage = 'Errore CORS';
+                    dettagliTecnici = 'Il browser sta bloccando la richiesta per motivi di sicurezza.';
+                }
+                
+                // Mostra la console per debug
+                console.error('API Key presente:', API_CONFIG.apiKey ? 'Sì' : 'No');
+                console.error('Lunghezza API Key:', API_CONFIG.apiKey.length);
+                console.error('Inizio API Key:', API_CONFIG.apiKey.substring(0, 10) + '...');
+                
+                resultsDiv.innerHTML = `
+                    <div style="text-align: center; padding: 40px; background: #fff3cd; 
+                                border-radius: 15px; border: 2px solid #ffc107;">
+                        <h3 style="color: #856404; margin-bottom: 15px;">⚠️ Ops! Qualcosa è andato storto</h3>
+                        <p style="color: #856404; margin-bottom: 10px; font-weight: bold;">
+                            ${errorMessage}
+                        </p>
+                        <p style="color: #856404; margin-bottom: 20px; font-size: 14px;">
+                            ${dettagliTecnici}
+                        </p>
+                        <details style="text-align: left; margin: 20px 0; padding: 15px; background: white; border-radius: 8px;">
+                            <summary style="cursor: pointer; color: #856404; font-weight: bold;">
+                                📋 Dettagli tecnici (clicca per espandere)
+                            </summary>
+                            <pre style="margin-top: 10px; padding: 10px; background: #f5f5f5; border-radius: 5px; 
+                                        font-size: 12px; overflow-x: auto; color: #333;">
+Errore: ${error.message}
+Modello: ${API_CONFIG.model}
+API Key presente: ${API_CONFIG.apiKey ? 'Sì' : 'No'}
+API Key formato: ${API_CONFIG.apiKey.startsWith('sk-ant-api') ? 'Corretto' : 'Non corretto'}
+                            </pre>
+                        </details>
+                        <p style="color: #856404; margin-bottom: 20px;">
+                            <strong>Soluzioni suggerite:</strong>
+                            <br>• Verifica che l'API key inizi con "sk-ant-api"
+                            <br>• Controlla di aver copiato TUTTA la chiave
+                            <br>• Assicurati di avere crediti disponibili nel tuo account
+                            <br>• Prova a creare una nuova API key
+                        </p>
+                        <button onclick="configuraAPIKey()" 
+                                style="padding: 12px 25px; background: #ffc107; color: #856404; 
+                                       border: none; border-radius: 8px; font-size: 14px; 
+                                       cursor: pointer; font-weight: bold; margin-right: 10px;">
+                            🔑 Riconfigura API Key
+                        </button>
+                        <button onclick="location.reload()" 
+                                style="padding: 12px 25px; background: #667eea; color: white; 
+                                       border: none; border-radius: 8px; font-size: 14px; 
+                                       cursor: pointer; font-weight: bold;">
+                            🔄 Riprova
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        // Funzione per usare la frase di esempio
+        function usaEsempio() {
+            document.getElementById('frase').value = 'Simone mangia un piatto di pasta velocemente';
+        }
+
+        // Funzione principale di analisi
+        function analizzaFrase() {
+            const frase = document.getElementById('frase').value.trim();
+            
+            if (!frase) {
+                alert('⚠️ Per favore, scrivi una frase da analizzare!');
+                return;
+            }
+
+            // Usa il nuovo analizzatore avanzato
+            const analizzatore = new AnalizzatoreAvanzato();
+            const risultati = analizzatore.analizzaFrase(frase);
+            
+            // Determina se la frase è complessa
+            let fraseComplessa = false;
+            risultati.forEach(item => {
+                if (item.tipo === 'congiunzione' && item.sottotipo === 'subordinante') {
+                    fraseComplessa = true;
+                }
+            });
+
+            mostraRisultatiAvanzati(risultati, fraseComplessa, frase);
+        }
+
+        // Funzione per riconoscere se una parola è un verbo dalle sue desinenze
+        function isVerbo(parola) {
+            // IMPORTANTE: Escludi parole con maiuscola (nomi propri)
+            // La parola arriva già in lowercase, ma controlliamo comunque
+            
+            // Verbi ausiliari e irregolari comuni
+            const verbiIrregolari = ['è', 'sono', 'sei', 'siamo', 'siete', 'era', 'erano', 'sarà', 'saranno', 'sia', 'siano', 'fosse', 'fossero',
+                'ho', 'hai', 'ha', 'hanno', 'aveva', 'avevano', 'avrà', 'avranno', 'avrei', 'avresti', 'avrebbe', 'avremmo', 'avreste', 'avrebbero', 'abbia', 'abbiano', 'avessi', 'avessero',
+                'va', 'vai', 'vado', 'andiamo', 'andate', 'vanno', 'andare', 'andavo', 'andrei', 'vada', 'vadano',
+                'fa', 'fai', 'faccio', 'facciamo', 'fate', 'fanno', 'fare', 'facevo', 'farei', 'faccia', 'facciano',
+                'sta', 'stai', 'sto', 'stiamo', 'state', 'stanno', 'stare', 'stavo', 'starei', 'stia', 'stiano',
+                'dà', 'dai', 'do', 'diamo', 'date', 'danno', 'dare', 'davo', 'darei', 'dia', 'diano',
+                'può', 'puoi', 'posso', 'possiamo', 'potete', 'possono', 'potere', 'potevo', 'potrei', 'possa', 'possano',
+                'deve', 'devi', 'devo', 'dobbiamo', 'dovete', 'devono', 'dovere', 'dovevo', 'dovrei', 'debba', 'debbano',
+                'vuole', 'vuoi', 'voglio', 'vogliamo', 'volete', 'vogliono', 'volere', 'volevo', 'vorrei', 'voglia', 'vogliano',
+                'sa', 'sai', 'so', 'sappiamo', 'sapete', 'sanno', 'sapere', 'sapevo', 'saprei', 'sappia', 'sappiano',
+                'viene', 'vieni', 'vengo', 'veniamo', 'venite', 'vengono', 'venire', 'venivo', 'verrei', 'venga', 'vengano',
+                'dice', 'dici', 'dico', 'diciamo', 'dite', 'dicono', 'dire', 'dicevo', 'direi', 'dica', 'dicano',
+                'esce', 'esci', 'esco', 'usciamo', 'uscite', 'escono', 'uscire', 'uscivo', 'uscirei', 'esca', 'escano'];
+            
+            if (verbiIrregolari.includes(parola)) return true;
+
+            // Lista di verbi comuni per forma esatta (per evitare ambiguità)
+            const verbiComuniEsatti = ['gioca', 'gioco', 'mangia', 'mangio', 'corre', 'corro', 'salta', 'salto', 
+                'parla', 'parlo', 'studia', 'studio', 'legge', 'leggo', 'scrive', 'scrivo', 'dorme', 'dormo',
+                'canta', 'canto', 'balla', 'ballo', 'nuota', 'nuoto', 'guarda', 'guardo', 'ascolta', 'ascolto',
+                'pensa', 'penso', 'crede', 'credo', 'vede', 'vedo', 'sente', 'sento', 'trova', 'trovo',
+                'cerca', 'cerco', 'lascia', 'lascio', 'porta', 'porto', 'prende', 'prendo', 'mette', 'metto',
+                'apre', 'apro', 'chiude', 'chiudo', 'ride', 'rido', 'piange', 'piango', 'grida', 'grido',
+                'torna', 'torno', 'entra', 'entro', 'arriva', 'arrivo', 'parte', 'parto', 'resta', 'resto',
+                'passa', 'passo', 'vive', 'vivo', 'muore', 'muoio', 'nasce', 'nasco', 'cresce', 'cresco'];
+            
+            if (verbiComuniEsatti.includes(parola)) return true;
+
+            // Controllo per imperativi con pronomi enclitici (dimmelo, fallo, vediamoci, dammi, dille)
+            const pronomEncliticiImperativi = ['mi', 'ti', 'lo', 'la', 'li', 'le', 'gli', 'ci', 'vi', 'si', 'ne', 'melo', 'mela', 'telo', 'tela', 'glielo', 'gliela', 'glieli', 'gliele'];
+            for (let pronome of pronomEncliticiImperativi) {
+                if (parola.endsWith(pronome) && parola.length > pronome.length + 2) {
+                    return true;
+                }
+            }
+
+            // Controllo per verbi all'infinito con pronomi enclitici (dirlo, farlo, vederlo, mangiarlo, ecc.)
+            const pronomEnclitici = ['lo', 'la', 'li', 'le', 'gli', 'mi', 'ti', 'ci', 'vi', 'si', 'ne'];
+            for (let pronome of pronomEnclitici) {
+                if (parola.endsWith(pronome)) {
+                    const radice = parola.slice(0, -pronome.length);
+                    if (radice.endsWith('are') || radice.endsWith('ere') || radice.endsWith('ire') || 
+                        radice.endsWith('rre') || radice.endsWith('rsi')) {
+                        return true;
+                    }
+                }
+            }
+
+            // Controllo per verbi riflessivi all'infinito (lavarsi, vestirsi, alzarsi)
+            if (parola.endsWith('rsi') || parola.endsWith('rmi') || parola.endsWith('rti') || 
+                parola.endsWith('rci') || parola.endsWith('rvi')) return true;
+
+            // Infiniti (-are, -ere, -ire)
+            if (parola.endsWith('are') || parola.endsWith('ere') || parola.endsWith('ire') || parola.endsWith('rre')) return true;
+
+            // Presente indicativo forme plurali (più sicure)
+            if (parola.endsWith('iamo') || parola.endsWith('iate') || parola.endsWith('ino') || 
+                parola.endsWith('ano')) return true;
+            if (parola.endsWith('ono') || parola.endsWith('ete')) return true;
+
+            // Imperfetto (forme sicure)
+            if (parola.endsWith('avo') || parola.endsWith('avi') || parola.endsWith('ava') || 
+                parola.endsWith('avamo') || parola.endsWith('avate') || parola.endsWith('avano')) return true;
+            if (parola.endsWith('evo') || parola.endsWith('evi') || parola.endsWith('eva') ||
+                parola.endsWith('evamo') || parola.endsWith('evate') || parola.endsWith('evano')) return true;
+            if (parola.endsWith('ivo') || parola.endsWith('ivi') || parola.endsWith('iva') ||
+                parola.endsWith('ivamo') || parola.endsWith('ivate') || parola.endsWith('ivano')) return true;
+
+            // Futuro
+            if (parola.endsWith('erò') || parola.endsWith('erai') || parola.endsWith('erà') ||
+                parola.endsWith('eremo') || parola.endsWith('erete') || parola.endsWith('eranno')) return true;
+
+            // Condizionale
+            if (parola.endsWith('erei') || parola.endsWith('eresti') || parola.endsWith('erebbe') ||
+                parola.endsWith('eremmo') || parola.endsWith('ereste') || parola.endsWith('erebbero')) return true;
+
+            // Congiuntivo
+            if (parola.endsWith('assi') || parola.endsWith('essi') || parola.endsWith('issi')) return true;
+            if (parola.endsWith('assi') || parola.endsWith('asimo') || parola.endsWith('aste') || parola.endsWith('assero')) return true;
+            if (parola.endsWith('essi') || parola.endsWith('essimo') || parola.endsWith('este') || parola.endsWith('essero')) return true;
+            if (parola.endsWith('issi') || parola.endsWith('issimo') || parola.endsWith('iste') || parola.endsWith('issero')) return true;
+
+            // Passato remoto
+            if (parola.endsWith('ammo') || parola.endsWith('aste') || parola.endsWith('arono')) return true;
+
+            // Participio passato
+            if (parola.endsWith('ato') || parola.endsWith('uto') || parola.endsWith('ito')) return true;
+
+            // Gerundio
+            if (parola.endsWith('ando') || parola.endsWith('endo')) return true;
+
+            return false;
+        }
+
+        // Funzione per analizzare una singola parola CON CONTESTO
+        function analizzaParolaConContesto(parola, parolaPrecedente, parolaSuccessiva) {
+            const analisiBase = analizzaParola(parola);
+            
+            // DISAMBIGUAZIONE CONTESTUALE per parole ambigue
+            
+            // "la", "lo", "li", "le" - possono essere articoli O pronomi
+            if (['la', 'lo', 'li', 'le'].includes(parola)) {
+                // Se la parola successiva è un nome/aggettivo, è articolo
+                // Se la precedente è un verbo o pronome, è pronome
+                const verbiPrecedenti = ['mi', 'ti', 'ci', 'vi', 'me', 'te'];
+                if (verbiPrecedenti.includes(parolaPrecedente)) {
+                    return {
+                        tipo: 'pronome',
+                        spiegazione: 'Pronome personale complemento'
+                    };
+                }
+            }
+            
+            // "che" - può essere pronome relativo, congiunzione, o aggettivo
+            if (parola === 'che') {
+                // Se dopo c'è un verbo, è pronome relativo
+                // Se dopo c'è un nome, potrebbe essere aggettivo interrogativo
+                // Se collega due frasi, è congiunzione
+                const articoli = ['il', 'lo', 'la', 'i', 'gli', 'le', 'un', 'uno', 'una'];
+                if (articoli.includes(parolaSuccessiva)) {
+                    return {
+                        tipo: 'aggettivo',
+                        spiegazione: 'Aggettivo interrogativo o esclamativo'
+                    };
+                }
+            }
+            
+            // "molto", "poco", "tanto", "troppo" - possono essere avverbi O aggettivi
+            if (['molto', 'poco', 'tanto', 'troppo'].includes(parola)) {
+                // Se la parola successiva è un nome, è aggettivo
+                // Se la precedente è un verbo o la successiva è un verbo/aggettivo, è avverbio
+                const articoli = ['il', 'lo', 'la', 'i', 'gli', 'le', 'un', 'uno', 'una'];
+                if (articoli.includes(parolaPrecedente) || parolaSuccessiva) {
+                    // Verifica se potrebbe essere seguito da un nome
+                    return analisiBase; // Mantieni l'analisi base per ora
+                }
+            }
+
+            return analisiBase;
+        }
+
+        // Funzione per analizzare una singola parola (base, senza contesto)
+        function analizzaParola(parola) {
+            // INTERIEZIONI
+            const interiezioni = ['oh', 'ah', 'eh', 'ahimè', 'evviva', 'accidenti', 'bravo', 'brava', 'uffa', 'ehi', 'ops', 'wow', 'bis', 'ahi', 'ohi', 'ohibò', 'ehilà', 'urrà', 'olé', 'peccato', 'aiuto', 'coraggio', 'salve', 'ciao', 'addio', 'boh', 'mah', 'macché', 'magari'];
+            if (interiezioni.includes(parola)) {
+                return {
+                    tipo: 'interiezione',
+                    spiegazione: 'Interiezione - esprime un\'emozione o un richiamo'
+                };
+            }
+
+            // ARTICOLI
+            // Articoli determinativi e indeterminativi
+            if (['il', 'lo', 'la', 'i', 'gli', 'le', "l'"].includes(parola)) {
+                return {
+                    tipo: 'articolo',
+                    spiegazione: 'Articolo determinativo'
+                };
+            }
+            if (['un', 'uno', 'una', "un'"].includes(parola)) {
+                return {
+                    tipo: 'articolo',
+                    spiegazione: 'Articolo indeterminativo'
+                };
+            }
+
+            // NUMERALI
+            // Numerali cardinali
+            const numeraliCardinali = ['zero', 'uno', 'due', 'tre', 'quattro', 'cinque', 'sei', 'sette', 'otto', 'nove', 'dieci', 'undici', 'dodici', 'tredici', 'quattordici', 'quindici', 'sedici', 'diciassette', 'diciotto', 'diciannove', 'venti', 'trenta', 'quaranta', 'cinquanta', 'sessanta', 'settanta', 'ottanta', 'novanta', 'cento', 'mille', 'milione', 'miliardo'];
+            if (numeraliCardinali.includes(parola)) {
+                return {
+                    tipo: 'numerale',
+                    spiegazione: 'Numerale cardinale - indica una quantità precisa'
+                };
+            }
+            
+            // Numerali ordinali
+            const numeraliOrdinali = ['primo', 'prima', 'primi', 'prime', 'secondo', 'seconda', 'secondi', 'seconde', 'terzo', 'terza', 'terzi', 'terze', 'quarto', 'quarta', 'quarti', 'quarte', 'quinto', 'quinta', 'quinti', 'quinte', 'sesto', 'sesta', 'settimo', 'ottavo', 'nono', 'decimo', 'undicesimo', 'dodicesimo', 'ventesimo', 'trentesimo', 'centesimo', 'millesimo', 'ultimo', 'ultima', 'ultimi', 'ultime', 'penultimo', 'penultima'];
+            if (numeraliOrdinali.includes(parola)) {
+                return {
+                    tipo: 'numerale',
+                    spiegazione: 'Numerale ordinale - indica la posizione in una serie'
+                };
+            }
+
+            // PREPOSIZIONI
+            // Preposizioni semplici
+            if (['di', 'a', 'da', 'in', 'con', 'su', 'per', 'tra', 'fra', 'senza'].includes(parola)) {
+                return {
+                    tipo: 'preposizione',
+                    spiegazione: 'Preposizione semplice'
+                };
+            }
+            
+            // Preposizioni articolate
+            if (['del', 'dello', 'della', 'dei', 'degli', 'delle', 'al', 'allo', 'alla', 'ai', 'agli', 'alle', 'dal', 'dallo', 'dalla', 'dai', 'dagli', 'dalle', 'nel', 'nello', 'nella', 'nei', 'negli', 'nelle', 'sul', 'sullo', 'sulla', 'sui', 'sugli', 'sulle'].includes(parola)) {
+                return {
+                    tipo: 'preposizione',
+                    spiegazione: 'Preposizione articolata'
+                };
+            }
+
+            // Preposizioni improprie (possono essere anche avverbi)
+            const preposizioniImproprie = ['davanti', 'dietro', 'prima', 'dopo', 'contro', 'lungo', 'durante', 'mediante', 'secondo', 'eccetto', 'tranne', 'salvo', 'fuorché', 'attraverso', 'verso', 'circa', 'oltre', 'entro'];
+            if (preposizioniImproprie.includes(parola)) {
+                return {
+                    tipo: 'preposizione',
+                    spiegazione: 'Preposizione impropria'
+                };
+            }
+
+            // PRONOMI
+            // Pronomi personali soggetto
+            if (['io', 'tu', 'egli', 'ella', 'lui', 'lei', 'noi', 'voi', 'essi', 'esse', 'loro'].includes(parola)) {
+                return {
+                    tipo: 'pronome',
+                    spiegazione: 'Pronome personale soggetto'
+                };
+            }
+            
+            // Pronomi personali complemento
+            if (['mi', 'ti', 'ci', 'vi', 'si', 'lo', 'la', 'li', 'le', 'ne', 'gli', 'me', 'te', 'se'].includes(parola)) {
+                return {
+                    tipo: 'pronome',
+                    spiegazione: 'Pronome personale complemento'
+                };
+            }
+
+            // Pronomi possessivi
+            const pronomiPossessivi = ['mio', 'mia', 'miei', 'mie', 'tuo', 'tua', 'tuoi', 'tue', 'suo', 'sua', 'suoi', 'sue', 'nostro', 'nostra', 'nostri', 'nostre', 'vostro', 'vostra', 'vostri', 'vostre'];
+            if (pronomiPossessivi.includes(parola)) {
+                return {
+                    tipo: 'pronome',
+                    spiegazione: 'Pronome possessivo'
+                };
+            }
+
+            // Pronomi dimostrativi
+            if (['questo', 'questa', 'questi', 'queste', 'quello', 'quella', 'quelli', 'quelle', 'ciò', 'codesto', 'costui', 'costei', 'costoro'].includes(parola)) {
+                return {
+                    tipo: 'pronome',
+                    spiegazione: 'Pronome dimostrativo'
+                };
+            }
+
+            // Pronomi relativi
+            if (['che', 'chi', 'cui', 'quale', 'quali', 'quanto', 'quanta', 'quanti', 'quante'].includes(parola)) {
+                return {
+                    tipo: 'pronome',
+                    spiegazione: 'Pronome relativo o interrogativo'
+                };
+            }
+
+            // Pronomi indefiniti
+            const pronomiIndefiniti = ['qualcuno', 'qualcuna', 'nessuno', 'nessuna', 'tutto', 'tutta', 'tutti', 'tutte', 'niente', 'nulla', 'qualcosa', 'ciascuno', 'ciascuna', 'chiunque', 'ognuno', 'ognuna', 'alcuno', 'alcuna', 'alcuni', 'alcune', 'altro', 'altra', 'altri', 'altre', 'certo', 'certa', 'certi', 'certe', 'parecchio', 'parecchia', 'parecchi', 'parecchie', 'tanto', 'tanta', 'tanti', 'tante', 'altrettanto', 'altrettanta', 'altrettanti', 'altrettante'];
+            if (pronomiIndefiniti.includes(parola)) {
+                return {
+                    tipo: 'pronome',
+                    spiegazione: 'Pronome indefinito'
+                };
+            }
+
+            // AGGETTIVI
+            // Aggettivi possessivi
+            if (pronomiPossessivi.includes(parola)) {
+                return {
+                    tipo: 'aggettivo',
+                    spiegazione: 'Aggettivo possessivo - indica possesso o appartenenza'
+                };
+            }
+
+            // Aggettivi dimostrativi
+            if (['questo', 'questa', 'questi', 'queste', 'quello', 'quella', 'quelli', 'quelle', 'codesto', 'codesta'].includes(parola)) {
+                return {
+                    tipo: 'aggettivo',
+                    spiegazione: 'Aggettivo dimostrativo - indica vicinanza o lontananza'
+                };
+            }
+
+            // Aggettivi indefiniti
+            const aggettiviIndefiniti = ['ogni', 'qualche', 'qualsiasi', 'qualunque', 'altro', 'altra', 'altri', 'altre', 'certo', 'certa', 'certi', 'certe', 'tale', 'tali', 'poco', 'poca', 'pochi', 'poche', 'molto', 'molta', 'molti', 'molte', 'troppo', 'troppa', 'troppi', 'troppe', 'tanto', 'tanta', 'tanti', 'tante', 'tutto', 'tutta', 'tutti', 'tutte', 'alcuno', 'alcuna', 'alcuni', 'alcune', 'nessuno', 'nessuna', 'parecchio', 'parecchia', 'parecchi', 'parecchie', 'vario', 'varia', 'vari', 'varie', 'diverso', 'diversa', 'diversi', 'diverse'];
+            if (aggettiviIndefiniti.includes(parola)) {
+                return {
+                    tipo: 'aggettivo',
+                    spiegazione: 'Aggettivo indefinito - indica quantità o qualità indeterminata'
+                };
+            }
+
+            // Aggettivi interrogativi/esclamativi
+            if (['quale', 'quali', 'che', 'quanto', 'quanta', 'quanti', 'quante'].includes(parola)) {
+                return {
+                    tipo: 'aggettivo',
+                    spiegazione: 'Aggettivo interrogativo o esclamativo'
+                };
+            }
+
+            // AVVERBI (da controllare PRIMA delle congiunzioni perché "come", "quando" possono essere entrambi)
+            // Avverbi interrogativi
+            const avverbiInterrogativi = ['come', 'quando', 'dove', 'perché', 'quanto'];
+            if (avverbiInterrogativi.includes(parola)) {
+                return {
+                    tipo: 'avverbio',
+                    spiegazione: 'Avverbio interrogativo - introduce una domanda'
+                };
+            }
+            
+            // Avverbi di negazione
+            const avverbiNegazione = ['non', 'no', 'né'];
+            if (avverbiNegazione.includes(parola)) {
+                return {
+                    tipo: 'avverbio',
+                    spiegazione: 'Avverbio di negazione'
+                };
+            }
+
+            // Avverbi di modo
+            const avverbiModo = ['bene', 'male', 'velocemente', 'lentamente', 'facilmente', 'difficilmente', 'volentieri', 'malvolentieri', 'insieme', 'apposta', 'piano', 'forte', 'chiaro', 'così', 'diversamente', 'altrimenti', 'comunque'];
+            if (avverbiModo.includes(parola) || parola.endsWith('mente')) {
+                return {
+                    tipo: 'avverbio',
+                    spiegazione: 'Avverbio di modo - indica il modo in cui si svolge l\'azione'
+                };
+            }
+
+            // Avverbi di tempo
+            const avverbiTempo = ['oggi', 'domani', 'ieri', 'ora', 'adesso', 'allora', 'prima', 'dopo', 'poi', 'già', 'ancora', 'sempre', 'mai', 'presto', 'tardi', 'subito', 'spesso', 'raramente', 'talvolta', 'stamattina', 'stasera', 'stanotte'];
+            if (avverbiTempo.includes(parola)) {
+                return {
+                    tipo: 'avverbio',
+                    spiegazione: 'Avverbio di tempo - indica quando avviene l\'azione'
+                };
+            }
+
+            // Avverbi di luogo
+            const avverbiLuogo = ['qui', 'qua', 'lì', 'là', 'sopra', 'sotto', 'dentro', 'fuori', 'vicino', 'lontano', 'davanti', 'dietro', 'dove', 'dovunque', 'ovunque', 'altrove', 'dappertutto'];
+            if (avverbiLuogo.includes(parola)) {
+                return {
+                    tipo: 'avverbio',
+                    spiegazione: 'Avverbio di luogo - indica dove avviene l\'azione'
+                };
+            }
+
+            // Avverbi di quantità
+            const avverbiQuantita = ['molto', 'poco', 'troppo', 'tanto', 'quanto', 'più', 'meno', 'parecchio', 'assai', 'abbastanza', 'quasi', 'almeno', 'circa', 'appena'];
+            if (avverbiQuantita.includes(parola)) {
+                return {
+                    tipo: 'avverbio',
+                    spiegazione: 'Avverbio di quantità - indica quanto'
+                };
+            }
+
+            // Avverbi di affermazione, dubbio
+            const altriAvverbi = ['sì', 'certo', 'certamente', 'sicuramente', 'davvero', 'proprio', 'forse', 'probabilmente', 'eventualmente', 'possibilmente'];
+            if (altriAvverbi.includes(parola)) {
+                return {
+                    tipo: 'avverbio',
+                    spiegazione: 'Avverbio di affermazione o dubbio'
+                };
+            }
+
+            // CONGIUNZIONI (dopo gli avverbi)
+            // Congiunzioni coordinanti
+            if (['e', 'ed', 'ma', 'però', 'anzi', 'o', 'oppure', 'ovvero', 'ossia', 'cioè', 'infatti', 'dunque', 'quindi', 'perciò', 'pertanto', 'allora', 'né', 'neanche', 'neppure', 'nemmeno'].includes(parola)) {
+                return {
+                    tipo: 'congiunzione',
+                    spiegazione: 'Congiunzione coordinante - unisce parole o frasi dello stesso tipo'
+                };
+            }
+            
+            // Congiunzioni subordinanti (rimosso "come" che è principalmente avverbio)
+            if (['perché', 'poiché', 'siccome', 'quando', 'mentre', 'se', 'qualora', 'affinché', 'benché', 'sebbene', 'nonostante', 'purché', 'siccome', 'giacché'].includes(parola)) {
+                return {
+                    tipo: 'congiunzione',
+                    spiegazione: 'Congiunzione subordinante - collega una frase dipendente'
+                };
+            }
+
+            // VERBI - Controllo con la funzione migliorata
+            if (isVerbo(parola)) {
+                return {
+                    tipo: 'verbo',
+                    spiegazione: 'Verbo - indica un\'azione, uno stato o un modo di essere'
+                };
+            }
+
+            // AGGETTIVI QUALIFICATIVI comuni
+            const aggettiviComuni = ['bello', 'bella', 'belli', 'belle', 'grande', 'grandi', 'piccolo', 'piccola', 'piccoli', 'piccole', 'buono', 'buona', 'buoni', 'buone', 'cattivo', 'cattiva', 'cattivi', 'cattive', 'rosso', 'rossa', 'rossi', 'rosse', 'blu', 'azzurro', 'azzurra', 'verde', 'verdi', 'giallo', 'gialla', 'gialli', 'gialle', 'bianco', 'bianca', 'bianchi', 'bianche', 'nero', 'nera', 'neri', 'nere', 'veloce', 'veloci', 'lento', 'lenta', 'lenti', 'lente', 'alto', 'alta', 'alti', 'alte', 'basso', 'bassa', 'bassi', 'basse', 'nuovo', 'nuova', 'nuovi', 'nuove', 'vecchio', 'vecchia', 'vecchi', 'vecchie', 'giovane', 'giovani', 'felice', 'felici', 'triste', 'tristi', 'allegro', 'allegra', 'allegri', 'allegre', 'simpatico', 'simpatica', 'simpatici', 'simpatiche', 'gentile', 'gentili', 'brutto', 'brutta', 'brutti', 'brutte'];
+            if (aggettiviComuni.includes(parola)) {
+                return {
+                    tipo: 'aggettivo',
+                    spiegazione: 'Aggettivo qualificativo - descrive una qualità del nome'
+                };
+            }
+
+            // Se non riconosciuta, probabilmente è un nome
+            return {
+                tipo: 'nome',
+                spiegazione: 'Nome proprio o comune'
+            };
+        }
+
+        // Nuova funzione per mostrare i risultati con analisi avanzata
+        function mostraRisultatiAvanzati(risultati, fraseComplessa, fraseOriginale) {
+            const resultsDiv = document.getElementById('results');
+            let html = '<h2 style="color: #667eea; margin-bottom: 20px; text-align: center;">📚 Risultati dell\'Analisi Avanzata</h2>';
+
+            risultati.forEach((item, index) => {
+                // Salta la punteggiatura nell'output (opzionale)
+                if (item.tipo === 'punteggiatura') {
+                    return;
+                }
+                
+                const regola = regoleGrammaticali[item.tipo] || {
+                    emoji: '📝',
+                    definizione: `${item.tipo.charAt(0).toUpperCase() + item.tipo.slice(1)}`,
+                    esempi: ''
+                };
+                
+                // Crea una spiegazione dettagliata
+                let spiegazioneDettagliata = item.spiegazione;
+                if (item.dettagli && item.dettagli.verbo) {
+                    spiegazioneDettagliata += `<br><small>Infinito: ${item.dettagli.verbo}</small>`;
+                }
+                if (item.sottotipo) {
+                    spiegazioneDettagliata += `<br><small>Tipo: ${item.sottotipo}</small>`;
+                }
+                
+                html += `
+                    <div class="word-card ${item.tipo}">
+                        <div class="word-text">
+                            <span class="emoji">${regola.emoji}</span>
+                            ${item.parola}
+                        </div>
+                        <div class="word-type">${item.tipo.toUpperCase()}</div>
+                        <div style="color: #666; margin: 5px 0;">${spiegazioneDettagliata}</div>
+                        <div class="word-explanation">
+                            <strong>💡 Definizione:</strong><br>
+                            ${regola.definizione}<br>
+                            ${regola.esempi ? `<em>${regola.esempi}</em>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+
+            // Aggiunge il bottone per l'analisi AI se la frase è complessa
+            if (fraseComplessa || risultati.length > 8) {
+                html += `
+                    <div style="margin-top: 30px; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 15px; text-align: center;">
+                        <h3 style="color: white; margin-bottom: 15px;">🤖 Vuoi un'analisi ancora più approfondita?</h3>
+                        <p style="color: white; margin-bottom: 20px; font-size: 14px;">
+                            Usa l'analisi AI per ottenere:
+                            <br>• Analisi logica (soggetto, predicato, complementi)
+                            <br>• Spiegazioni pedagogiche dettagliate
+                            <br>• Suggerimenti per migliorare la frase
+                        </p>
+                        <button onclick="analisiAI('${fraseOriginale.replace(/'/g, "\\'")}')" 
+                                style="background: white; color: #667eea; border: none; padding: 15px 30px; 
+                                       border-radius: 25px; font-size: 16px; font-weight: bold; 
+                                       cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                                       transition: transform 0.2s;">
+                            🚀 Analisi AI Completa
+                        </button>
+                        <p style="color: white; margin-top: 10px; font-size: 12px; opacity: 0.9;">
+                            ⚡ Richiede connessione internet
+                        </p>
+                    </div>
+                `;
+            }
+
+            resultsDiv.innerHTML = html;
+            resultsDiv.classList.add('show');
+            
+            // Scroll verso i risultati
+            resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        
+        // Funzione per mostrare i risultati (manteniamo per retrocompatibilità)
+        function mostraRisultati(risultati, fraseComplessa, fraseOriginale) {
+            const resultsDiv = document.getElementById('results');
+            let html = '<h2 style="color: #667eea; margin-bottom: 20px; text-align: center;">📚 Risultati dell\'Analisi</h2>';
+
+            risultati.forEach((item, index) => {
+                const regola = regoleGrammaticali[item.tipo];
+                html += `
+                    <div class="word-card ${item.tipo}">
+                        <div class="word-text">
+                            <span class="emoji">${regola.emoji}</span>
+                            ${item.parola}
+                        </div>
+                        <div class="word-type">${item.tipo.toUpperCase()}</div>
+                        <div>${item.spiegazione}</div>
+                        <div class="word-explanation">
+                            <strong>💡 Spiegazione:</strong><br>
+                            ${regola.definizione}<br>
+                            <em>${regola.esempi}</em>
+                        </div>
+                    </div>
+                `;
+            });
+
+            // Aggiunge il bottone per l'analisi AI se la frase è complessa o ha più di 8 parole
+            if (fraseComplessa || risultati.length > 8) {
+                html += `
+                    <div style="margin-top: 30px; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 15px; text-align: center;">
+                        <h3 style="color: white; margin-bottom: 15px;">🤖 Vuoi un'analisi più approfondita?</h3>
+                        <p style="color: white; margin-bottom: 20px; font-size: 14px;">
+                            Questa frase sembra complessa! Usa l'analisi AI per ottenere:
+                            <br>• Spiegazione dettagliata della struttura della frase
+                            <br>• Analisi logica (soggetto, predicato, complementi)
+                            <br>• Eventuali errori grammaticali
+                        </p>
+                        <button onclick="analisiAI('${fraseOriginale.replace(/'/g, "\\'")}')" 
+                                style="background: white; color: #667eea; border: none; padding: 15px 30px; 
+                                       border-radius: 25px; font-size: 16px; font-weight: bold; 
+                                       cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                                       transition: transform 0.2s;">
+                            🚀 Analisi Avanzata con AI
+                        </button>
+                        <p style="color: white; margin-top: 10px; font-size: 12px; opacity: 0.9;">
+                            ⚡ Richiede connessione internet
+                        </p>
+                    </div>
+                `;
+            }
+
+            resultsDiv.innerHTML = html;
+            resultsDiv.classList.add('show');
+            
+            // Scroll verso i risultati
+            resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    </script>
+</body>
+</html>
