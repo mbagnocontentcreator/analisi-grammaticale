@@ -549,7 +549,7 @@
                 console.log('Invio richiesta al backend Vercel...');
                 
                 // Usa il nuovo backend Vercel invece di chiamare direttamente Anthropic
-                const response = await fetch('https://analisi-grammaticale-k47o7njw5-matteo-bagnos-projects.vercel.app/api/analyze', {
+                const response = await fetch('https://analisi-grammaticale-api.vercel.app/api/analyze', {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"
