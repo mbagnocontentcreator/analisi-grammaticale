@@ -145,12 +145,33 @@ python3 -m http.server 8000
 - **Console Anthropic**: https://console.anthropic.com/
 - **Documentazione Claude**: https://docs.anthropic.com/
 
+## ⚠️ Incidente di Sicurezza Risolto (16/11/2025)
+
+### Problema:
+- API key accidentalmente salvata in questo file di documentazione
+- GitHub Secret Scanner l'ha rilevata e segnalata ad Anthropic
+- Anthropic ha disattivato automaticamente la chiave per sicurezza
+
+### Soluzione:
+1. Rimossa immediatamente l'API key da questo file
+2. Creata nuova API key su Anthropic Console
+3. Aggiornata nel codice (sempre offuscata con base64)
+4. Autorizzata su GitHub come "used in tests"
+
+### Lezione Appresa:
+**MAI salvare API key in:**
+- File di documentazione (README, MD, TXT)
+- Commit messages
+- Screenshot o log
+- **SOLO nel codice HTML/JS offuscata!**
+
 ## 🔄 Ultimo Aggiornamento
 
-- **Data**: 16 Novembre 2025
-- **Versione**: 1.0.0
-- **Stato**: ✅ Funzionante e pubblicato
-- **Ultima modifica**: Fix modello Claude API
+- **Data**: 16 Novembre 2025 (ore 15:30)
+- **Versione**: 1.0.1
+- **Stato**: ✅ Funzionante con nuova API key
+- **Ultima modifica**: Sostituzione API key compromessa
+- **GitHub Protection**: Configurato come "test use"
 
 ---
 
