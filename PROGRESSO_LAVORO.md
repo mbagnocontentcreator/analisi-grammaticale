@@ -16,8 +16,8 @@
    - Progressive Web App (PWA) con manifest.json
 
 3. **Configurazione API Claude**
-   - API key integrata: `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`
-   - Offuscata con base64 per sicurezza
+   - API key integrata nel codice (offuscata con base64)
+   - ⚠️ NOTA: Non salvare mai l'API key in file di documentazione
    - Modello: `claude-3-5-haiku-20241022`
    - Sistema di gestione errori dettagliato
 
@@ -46,7 +46,8 @@ ANALISI GRAMMATICALE/
 ## 🔧 Configurazioni Tecniche
 
 ### API Anthropic
-- **Chiave**: Integrata nel codice (offuscata base64)
+- **Chiave**: Integrata nel codice HTML (offuscata base64)
+- **⚠️ IMPORTANTE**: Mai salvare API key in file di documentazione o commit messages
 - **Modello**: claude-3-5-haiku-20241022
 - **Max tokens**: 1500
 - **Costo stimato**: ~$0.25 per milione di token
