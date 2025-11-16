@@ -428,29 +428,30 @@
             }
         };
 
-        // Configurazione API
+        // Configurazione API  
         const API_CONFIG = {
-            // IMPORTANTE: Inserire qui la propria API key di Anthropic
+            // API key integrata per uso educativo (offuscata per sicurezza)
             // Per ottenere una API key: https://console.anthropic.com/
-            apiKey: localStorage.getItem('anthropic_api_key') || '',
-            model: 'claude-3-sonnet-20241022',  // Modello più recente e stabile
+            apiKey: atob('c2stYW50LWFwaTAzLUpVVG5VUDZVWVptVnVQMkl6UGo0SjNaRG1vamFWUE4yalBCbktrdEpCekhXd2VET2lLSEs1NTFScWo0bXJqLUFFbDgxY3plQUd4cDJBellSYzR3VmZBLVBsa2w4UUFB'),
+            model: 'claude-3-haiku-20240307',  // Modello più economico per uso educativo
             maxTokens: 1500
         };
         
-        // Funzione per configurare l'API key
+        // Funzione per configurare l'API key (opzionale, se vuoi cambiarla)
         function configuraAPIKey() {
-            const currentKey = localStorage.getItem('anthropic_api_key') || '';
+            const currentKey = API_CONFIG.apiKey || localStorage.getItem('anthropic_api_key') || '';
             const newKey = prompt('Inserisci la tua API key di Anthropic Claude:\n\n' +
                                  'Per ottenere una API key gratuita:\n' +
                                  '1. Vai su https://console.anthropic.com/\n' +
                                  '2. Registrati o accedi\n' +
                                  '3. Crea una nuova API key\n\n' +
-                                 'La chiave verrà salvata localmente nel tuo browser.', currentKey);
+                                 'Nota: C\'è già una API key configurata nel codice.\n' +
+                                 'Inseriscine una nuova solo se vuoi sovrascriverla.', currentKey);
             
             if (newKey && newKey.trim()) {
                 localStorage.setItem('anthropic_api_key', newKey.trim());
                 API_CONFIG.apiKey = newKey.trim();
-                alert('API key salvata con successo!');
+                alert('API key aggiornata con successo!');
                 return true;
             }
             return false;
@@ -517,10 +518,17 @@
             }
             
             // Verifica presenza API key
-            if (!API_CONFIG.apiKey) {
+            if (!API_CONFIG.apiKey || API_CONFIG.apiKey === 'INSERISCI-QUI-LA-TUA-API-KEY') {
+                alert('⚠️ API Key non configurata!\n\n' +
+                      'Per utilizzare l\'analisi AI:\n' +
+                      '1. Apri il file HTML in un editor\n' +
+                      '2. Cerca "INSERISCI-QUI-LA-TUA-API-KEY"\n' +
+                      '3. Sostituiscilo con la tua vera API key\n' +
+                      '4. Salva e ricarica su GitHub\n\n' +
+                      'Oppure clicca OK per inserirla ora manualmente.');
+                
                 const configured = configuraAPIKey();
                 if (!configured) {
-                    alert('Per utilizzare l\'analisi AI è necessaria una API key di Anthropic.');
                     return;
                 }
             }
